@@ -26,4 +26,6 @@ W <- FBM(obj.bigSNP$genotypes$ncol, width, backingfile = paste(tmpfile,"rds",sep
 W$show()
 W [] <- rnorm(length(W))
 
-# apply_weight <- function(X)
+apply_weight <- function(X, row) {
+  X[]
+}
