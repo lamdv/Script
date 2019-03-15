@@ -36,6 +36,11 @@ W [] <- rnorm(length(W))
 #                   block.size = 100e3, ncores = nb_cores())  
 
 
-h1 <- big_prodMat(obj.bigSNP$genotypes,W)
+h1 <- as_FBM(big_prodMat(obj.bigSNP$genotypes,W))
+sums <- big_colstats(h1)$sum
 
+h1.out <- big_apply(h1, function(X, ind){
+  return(tan(sum(X[ ,ind]))) 
+}, ind = ncol(h1))
 
+tan(sum(h1[100, ]))
