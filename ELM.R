@@ -20,19 +20,22 @@ head(obj.bigSNP$fam)
 
 # Generate input weight
 # Gaussian input weight; sum = 0
-W <- FBM(obj.bigSNP$genotypes$ncol, width, backingfile = paste("weight","rds",sep = "."))
+W <- FBM(obj.bigSNP$genotypes$ncol, width, backingfile = ("weight"))
+#W <- big_attach("weight.rds.bk")
 W$show()
 W [] <- rnorm(length(W))
-head(W[])
+# head(W[])
 
-apply_weight <- function(X, ind) {
-  print(min(ind))
-  r <- X[ind, ]
-  product <- big_apply(W, a.FUN = function(W, ind, vect){
-    return vect * W[ind, ]
-  })
-}
+#apply_weight <- function(X, ind) {
+#  print(min(ind))
+#  r <- X[ind, ]
+#  big_prodVec(W, r.T)
+#}
+#prods <- big_apply(obj.bigSNP$genotypes, a.FUN = apply_weight, 
+#                   a.combine =h1 <- big_prodMat(W, 'c', ind = rows_along(obj.bigSNP$genotypes),
+#                   block.size = 100e3, ncores = nb_cores())  
 
-prods <- big_apply(obj.bigSNP$genotypes, a.FUN = apply_weight, 
-                   a.combine = 'c', ind = rows_along(fbm),
-                   block.size = 100e3, ncores = nb_cores())  
+
+h1 <- big_prodMat(obj.bigSNP$genotypes,W)
+
+

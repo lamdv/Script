@@ -14,3 +14,11 @@ out <- lassosum.pipeline(cor =cor, chr=ss$chromosome, pos = ss$physical.pos,
                          A1 = ss$allele1, A2 = ss$allele2,
                          ref.bfile = train.bfile, test.bfile = test.bfile,
                          LDblocks = LDblocks)
+
+v <- validate(out)
+
+out2 <- subset(out, s=v$best.s, lambda = v$best.lambda)
+v2 <- validate(out2)
+v2$best.validation.result
+AUC(v2$best.pgs, v$pheno)
+
