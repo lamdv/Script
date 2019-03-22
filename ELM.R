@@ -5,7 +5,7 @@ library(bigsnpr)
 library(bigreadr)
 
 # Set parameters
-width = 1000
+width = 3000
 
 # Declare dataset here
 data_train <- "data_train"
@@ -20,10 +20,10 @@ head(obj.bigSNP$fam)
 
 # Generate input weight
 # Gaussian input weight; sum = 0
-W <- FBM(obj.bigSNP$genotypes$ncol, width, backingfile = ("weight"))
-#W <- big_attach("weight.rds.bk")
+W <- FBM(obj.bigSNP$genotypes$ncol+1, width, backingfile = ("weight"))
+W <- big_attach("weight.bk")
 W$show()
-W [] <- rnorm(length(W),mean=0,sd = 1/sqrt(ncol(obj.bigSNP$genotypes)))
+W [] <- rnorm(length(W),mean=0.5,sd = 0.5)
 head(W[])
 
 #apply_weight <- function(X, ind) {
@@ -37,13 +37,13 @@ head(W[])
 
 # ELM Steps
 h1 <- as_FBM(big_prodMat(obj.bigSNP$genotypes,W))
-hist(h1[,1])
-h1
+# hist(h1[,1])
+# h1
 h1.out <- matrix(unlist(big_apply(h1, a.FUN = function(X, ind){
   1/(1+exp((-X[,ind])))
-})), ncol = 1000, byrow = TRUE)
+})), ncol = width, byrow = TRUE)
 
-h1.out <- matrix(unlist(h1.out), ncol = 1000, byrow = TRUE)
+h1.out <- matrix(unlist(h1.out), ncol = width, byrow = TRUE)
 
 h1.out <- as_FBM(h1.out)
 
@@ -55,14 +55,19 @@ test <- big_univLogReg(h1.out, y01.train = obj.bigSNP$fam$affection)
 #########
 
 snp_readBed(bedfile = paste(data_test,"bed",sep="."), backingfile = data_test)
-obj.bigSNP <- snp_attach(paste(data_test,"rds",sep = "."))
+test.bigSNP <- snp_attach(paste(data_test,"rds",sep = "."))
 
 # ELM Steps
-h1 <- as_FBM(big_prodMat(obj.bigSNP$genotypes,W))
-hist(h1[,1])
-h1
-h1.out <- matrix(unlist(big_apply(h1, a.FUN = function(X, ind){
-  1/(1+exp((-X[,ind])))
-})), ncol = 1000, byrow = TRUE)
+h2 <- as_FBM(big_prodMat(test.bigSNP$genotypes,W))
 
-h1.out <- as_FBM(h1.out)
+h2.out <- matrix(unlist(big_apply(h2, a.FUN = function(X, ind){
+  1/(1+exp((-X[,ind])))
+})), ncol = width, byrow = TRUE)
+
+h2.out <- as_FBM(h2.out)
+beta.out <- as_FBM(matrix(unlist(test$estim), nrow = width))
+
+pred <- big_prodMat(h2.out,beta.out)
+length(pred)
+length(test.bigSNP$fam$affection)
+AUC(pred, test.bigSNP$fam$affection)
