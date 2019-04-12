@@ -1,5 +1,6 @@
 library(lassosum)
 library(data.table)
+library(bigstatsr)
 setwd("~/Documents/simus")
 
 ss <- fread("sumstats.txt")
@@ -21,4 +22,3 @@ out2 <- subset(out, s=v$best.s, lambda = v$best.lambda)
 v2 <- validate(out2)
 v2$best.validation.result
 AUC(v2$best.pgs, v$pheno)
-

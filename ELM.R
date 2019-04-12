@@ -39,7 +39,8 @@ head(W[])
 #                   block.size = 100e3, ncores = nb_cores())  
 
 # ELM Steps
-h1 <- as_FBM(big_prodMat(obj.bigSNP$genotypes,W))
+h1 <- obj.bigSNP$genotypes - 1/2
+h1 <- as_FBM(big_prodMat(h1,W))
 # hist(h1[,1])
 h1
 h1.out <- matrix(unlist(big_apply(h1, a.FUN = function(X, ind){

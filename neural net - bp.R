@@ -38,6 +38,7 @@ head(W[])
 ncol(obj.bigSNP$genotypes)
 bias <- matrix(1,nrow = nrow(obj.bigSNP$genotypes),ncol = 1)
 G <- obj.bigSNP$genotypes$add_columns(1)
+G <- G - 1/2
 nrow(W)
 h1 <- as_FBM(big_prodMat(W,obj.bigSNP$genotypes))
 # hist(h1[,1])
