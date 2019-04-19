@@ -1,6 +1,8 @@
 library(lassosum)
 library(data.table)
 library(bigstatsr)
+
+#Lassosum step
 setwd("~/Documents/simus")
 
 ss <- fread("sumstats.txt")
@@ -16,6 +18,9 @@ out <- lassosum.pipeline(cor =cor, chr=ss$chromosome, pos = ss$physical.pos,
                          ref.bfile = train.bfile, test.bfile = test.bfile,
                          LDblocks = LDblocks)
 
+###
+#Extract result
+
 v <- validate(out)
 
 out2 <- subset(out, s=v$best.s, lambda = v$lambda)
@@ -23,6 +28,10 @@ v2 <- validate(out2)
 v2$best.validation.result
 AUC(v$best.pgs, v$pheno)
 
+###
+#Stacking step
+
 beta <- out2$beta['0.5']
-keep <- out2$test.extract
+keep <- subset(range(0, size))
+
 grid <- beta

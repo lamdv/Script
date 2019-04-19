@@ -21,7 +21,7 @@ head(obj.bigSNP$fam)
 
 # Generate input weight
 # Gaussian input weight; sum = 0
-W <- FBM(obj.bigSNP$genotypes$ncol, width, backingfile = ("weight"))
+W <- FBM(obj.bigSNP$genotypes$ncol, setwd("~/Documents/simus")width, backingfile = ("weight"))
 W$save()
 W <- big_attach("weight.rds")
 W$show()
@@ -39,9 +39,11 @@ head(W[])
 #                   block.size = 100e3, ncores = nb_cores())  
 
 # ELM Steps
-h1 <- obj.bigSNP$genotypes - 1/2
+big_apply(obj.bigSNP$genotypes, a.FUN = function(X, ind){
+  X[, ind] <- X[, ind] - 0.5
+})
 h1 <- as_FBM(big_prodMat(h1,W))
-# hist(h1[,1])
+hist(h1[])
 h1
 h1.out <- matrix(unlist(big_apply(h1, a.FUN = function(X, ind){
   relu(X[,ind])
