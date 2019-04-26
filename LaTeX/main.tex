@@ -1,0 +1,140 @@
+\typeout{IJCAI-11 Instructions for Authors}
+
+% These are the instructions for authors for IJCAI-11.
+% They are the same as the ones for IJCAI-07 with superficical wording
+%   changes only.
+
+\documentclass{article}
+% The file ijcai11.sty is the style file for IJCAI-11 (same as ijcai07.sty).
+\usepackage{ijcai11}
+
+% Use the postscript times font!
+\usepackage{times}
+
+% \usepackage[style=authoryear,sorting=ynt]{biblatex}
+% \usepackage{bibtex}
+% the following package is optional:
+%\usepackage{latexsym} 
+
+% Following comment is from ijcai97-submit.tex:
+% The preparation of these files was supported by Schlumberger Palo Alto
+% Research, AT\&T Bell Laboratories, and Morgan Kaufmann Publishers.
+% Shirley Jowell, of Morgan Kaufmann Publishers, and Peter F.
+% Patel-Schneider, of AT\&T Bell Laboratories collaborated on their
+% preparation.
+
+% These instructions can be modified and used in other conferences as long
+% as credit to the authors and supporting agencies is retained, this notice
+% is not changed, and further modification or reuse is not restricted.
+% Neither Shirley Jowell nor Peter F. Patel-Schneider can be listed as
+% contacts for providing assistance without their prior permission.
+
+% To use for other conferences, change references to files and the
+% conference appropriate and use other authors, contacts, publishers, and
+% organizations.
+% Also change the deadline and address for returning papers and the length and
+% page charge instructions.
+% Put where the files are available in the appropriate places.
+
+
+\title{Machine Learning for Polygenic risk score}
+% \thanks{These match the formatting instructions of IJCAI-07. The support of IJCAI, Inc. is acknowledged.}}
+\author{Vu-Lam DANG\\ 
+Universite Grenoble Alpes\\
+Grenoble, France \\
+vu-lam.dang@etu.univ-grenoble-alpes.fr \\
+\\
+Supervised by: Dr. Michael G. B. Blum.} % Mosig student
+
+\begin{document}
+
+
+
+
+\maketitle
+
+{% Mosig student
+  {\hbox to0pt{\vbox{\baselineskip=10dd\hrule\hbox
+to\hsize{\vrule\kern3pt\vbox{\kern3pt
+\hbox{{\small I understand what plagiarism entails and I declare that this report }}
+\hbox{{\small is my own, original work. }}
+\hbox{{\small Vu-Lam DANG, 26/04/2019:}}
+\kern3pt
+}\hfil%\kern3pt
+\vrule
+}\hrule}
+}}
+}
+
+
+\begin{abstract}
+The advent of genomic prediction as a viable 
+diagnostic tool for certain disease have become 
+a reality in the last decade. One particular 
+interesting metric is called Polygenic Risk Score, 
+which sumaries the genetic. For this internship project, 
+we interested in applying advancement in the field of 
+machine learning to improve the predictive power of PRS.
+\end{abstract}
+
+\section{Introduction}
+
+\subsection{Polygenic Risk Score}
+Polygenic Risk Score (PRS) \cite{Dudbridge2013} is a single perimeter metric
+constructed from the weighted sum of associated alleles within each subject.
+Given a pair of traits $Y = (Y 1 , Y 2)'$ 0 expressed as a weighted sum of m genetic
+effects and a bias indicate environmental and unaccounted genetic effects:
+
+$$Y = \beta' G + \epsilon = [\sum_{i=1}^{m} \beta_{i1} G_1 + \epsilon_1, \sum_{i=1}^{m} \beta_{i2} G_2 + \epsilon_2]$$
+
+where $\beta$ is a $m*2$ weight matrix, $G$ is $m$ length vector of genetic markers 
+and $\epsilon$ is a pair of random error that's independent from G.
+
+The Polygenic score is defined as:
+
+$$\hat{S} = \sum_{i=1}^{m} \beta_{i1} G_1$$
+Association between a trait and its composite score highly implies there exist a
+genetic signal among the markers, and the evident of genetic effect when there is
+no obvious candidate can be obtained. Currently polygenic score have been used
+for association testing rather than predicting complex traits \cite{Dudbridge2013}.
+
+Howerver, \cite{Inouye1883} conducted a PRS study on 1.7 million genetic
+variants using UK Biobank database on Coronary Atery Disease, and found
+strong association between PRS and hazard ration for CAD; demonstrated
+the power of genomic risk prediction to stratify individuals, and highlights the
+possibility for genomic screening early in life to support risk predition and
+preventive treatement.
+
+\subsection{Regression Method}
+
+
+\subsection{Objective}
+
+\section{Proposal}
+
+For this work we would like to pursuit 2 different direction. The first direction is 
+called stacking, in which one model with different values for input parameters, 
+or several different models is combined to create more better prediction.
+
+The second direction is to create a sparse model that closely resemble the predictive
+power of genome-wide risk score.
+
+\section{Methodology}
+
+
+
+\section{Conclusion}
+
+Polygenic Score have been widely studied as a good tool to identify and early
+diagnose high risked individual. In order to make it a viable tool for clinical usage,
+improvement have to be make to decrease false negative and reduce computational
+complexity of the model. By incorporate machine learning technique, we hope to
+eventually develop PRS into a powerful and accurate metric and tool to assess
+and identify clinical risk factor.
+
+%% The file named.bst is a bibliography style file for BibTeX 0.99c
+% \bibliographystyle{named}
+\bibliography{main}
+
+\end{document}
+
