@@ -21,7 +21,7 @@ head(obj.bigSNP$fam)
 
 # Generate input weight
 # Gaussian input weight; sum = 0
-W <- FBM(obj.bigSNP$genotypes$ncol, setwd("~/Documents/simus")width, backingfile = ("weight"))
+W <- FBM(obj.bigSNP$genotypes$ncol, width, backingfile = ("weight"))
 W$save()
 W <- big_attach("weight.rds")
 W$show()

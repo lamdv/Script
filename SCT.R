@@ -1,6 +1,10 @@
 setwd("~/Documents/simus")
 
 library(bigsnpr)
+library(lassosum)
+library(data.table)
+library(bigstatsr)
+# library(bigsnpr)
 
 sumstats <- bigreadr::fread2("sumstats.txt")
 
