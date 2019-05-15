@@ -5,6 +5,7 @@ library(lassosum)
 library(data.table)
 library(bigstatsr)
 library(sigmoid)
+library(neuralnet)
 # library(bigsnpr)
 
 sumstats <- bigreadr::fread2("sumstats.txt")
