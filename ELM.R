@@ -24,7 +24,7 @@ G[,G$ncol] <- 1
 # Generate input weight
 # Gaussian input weight; sum = 0
 W <- FBM(G$ncol, width, backingfile = ("weight"))
-W [] <- rnorm(length(W),mean=0,sd = 1/nrow(obj.bigSNP$genotypes))
+W [] <- runif(length(W))
 W$save()
 W <- big_attach("weight.rds")
 W$show()
