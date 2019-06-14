@@ -69,13 +69,10 @@ to\hsize{\vrule\kern3pt\vbox{\kern3pt
 
 
 \begin{abstract}
-The advent of genomic prediction as a viable 
-diagnostic tool for certain disease have become 
-a reality in the last decade. One particular 
-interesting metric is called Polygenic Risk Score, 
-which summaries the genetic. For this internship project, 
-we interested in applying advancement in the field of 
-machine learning to improve the predictive power of PRS.
+The advent of genomic prediction as a viable diagnostic tool for certain disease have 
+become a reality in the last decade. One particular interesting metric is called 
+Polygenic Risk Score, which summaries the genetic. For this internship project, we 
+are interested in applying advancement in the field of machine learning to improve the predictive power of PRS.
 \end{abstract}
 
 \section{Introduction}
@@ -114,41 +111,31 @@ important genetic effects, such as Linkage Disequilibrium. Furthermore, all SNPs
 used in the final calculation while not all are useful, lead to some loss in performance.
 
 Clumping and Thresholding (C+T) is a derivative from simple Linear Regression PRS. 
-In this method, only SNPs with p-values that are under a threshold are selected, and related SNPs are clumped together as a single input variable. 
-We implemented this model in R using a package called \textit{bigsnpr} \cite{bigsnpr} that provide various functions for genomics 
-computation.
+In this method, only SNPs with p-values that are under a threshold are selected, and 
+related SNPs are clumped together as a single input variable. 
+We implemented this model in R using a package called \textit{bigsnpr} \cite{bigsnpr} 
+that provide various functions for genomics computation.
 
-To specifically combat Linkage Disequilibrium, LDPred provide a Python package and standalone 
-application to calculate PRS, with LD modelled into the computation \cite{LDpred}.
+To specifically combat Linkage Disequilibrium, LDPred provide a Python package and 
+standalone application to calculate PRS, with LD modelled into the computation 
+\cite{LDpred}.
 
-\textit{lassosum} \cite{doi:10.1002/gepi.22050} is an R package that provides PRS using a Penalized Regression known as LASSO. 
-This method is the state of the art, and so far provide the best AUC in all methods tested ($AUC = 0.73$).
-
-\subsection{Objective}
-
-In this work, we looking for methods to 1. enhance the prediction power of PRS and 2. reduce the computing power required to 
-compute $\beta$ and PRS. In particular, stacking and pruning techniques will be investigated to accomplish these goals.
-
-\section{Proposal}
-
-For this work, we would like to pursuit 2 different direction. The first direction is 
-called stacking, in which one model with different values for input parameters, 
-or several different models are combined to create better predictions.
-
-The second direction is to create a sparse model that closely resembles the prediction
-power of genome-wide risk score. This method has the benefit of reducing computing complexity 
-while (theoretically) maintaining prediction power.
+\textit{lassosum} \cite{doi:10.1002/gepi.22050} is an R package that provides PRS using a 
+Penalized Regression known as LASSO. 
+This method is the state of the art, and so far provide the best AUC in all methods 
+tested ($AUC = 0.73$).
 
 \section{Methodology}
 
-The models are trained on a sample dataset of 8000 data points, each with more than $600000$ SNPs. A
-test dataset is also provided. The same dataset is also used to verify the result of other methods 
-(described in section 2).
+The models are trained on a sample dataset of 8000 data points, each with more than 
+$600000$ SNPs. Atest dataset is also provided. The same dataset is also used to verify 
+the result of other methods (described in section 2).
 
 These datasets are provided by Florian Prive.
 
-The computation on this work is written in R and Python. For R we specifically use 2 package bigstasr and bigsnpr,
-which provide methods to handle large dataset by using disk swap \cite{bigsnpr}.
+The computation on this work is written in R and Python. For R we specifically use 2 
+package bigstasr and bigsnpr,which provide methods to handle large dataset by using disk 
+swap \cite{bigsnpr}.
 
 \section{Conclusion}
 

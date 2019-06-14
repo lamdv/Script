@@ -4,7 +4,7 @@ library(bigsnpr)
 library(lassosum)
 library(data.table)
 library(bigstatsr)
-# library(bigsnpr)
+library(bigsnpr)
 
 sumstats <- bigreadr::fread2("sumstats.txt")
 

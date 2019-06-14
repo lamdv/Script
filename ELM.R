@@ -6,25 +6,34 @@ library(bigreadr)
 library(sigmoid)
 # Set parameters
 
-width = 1000
+width = 10000
 
-# Declare dataset here
-data_train <- "data_train"
-data_test <- "data_test"
 
-# Read training example
-snp_readBed(bedfile = paste(data_train,"bed",sep="."), backingfile = data_train)
-obj.bigSNP <- snp_attach(paste(data_train,"rds",sep = "."))
+sumstats <- bigreadr::fread2("sumstats.txt")
+snp_readBed("data_train.bed")
+train <- snp_attach("data_train.rds")
+G.train <- train$genotypes
+CHR <- train$map$chromosome
+POS <- train$map$physical.pos
+NCORES <- nb_cores()
+lpval <- -log10(sumstats$pval)
+y.train <- train$fam$affection
 
-obj.bigSNP$genotypes$show()
-head(obj.bigSNP$fam)
-G <- obj.bigSNP$genotypes
+# first layer compose of C+T features
+all_keep <- snp_grid_clumping(G.train, CHR, POS, lpval, ncores = NCORES)
+saveRDS(all_keep, "all_keep.rds")
+all_keep <- readRDS("all_keep.rds")
+head(all_keep)
+PRS <-snp_grid_PRS(G.train,all_keep = all_keep, betas = sumstats$beta,lpval)
+head(PRS)
+
+G <- PRS
 G$add_columns(1)
 G[,G$ncol] <- 1
 # Generate input weight
 # Gaussian input weight; sum = 0
-W <- FBM(G$ncol, width, backingfile = ("weight"))
-W [] <- runif(length(W))
+W <- FBM(G$ncol, width)
+W[] <- runif(length(W))
 W$save()
 W <- big_attach("weight.rds")
 W$show()
@@ -75,14 +84,23 @@ h2.out <- as_FBM(matrix(unlist(big_apply(h2, a.FUN = function(X, ind){
   1/(1+exp((-X[,ind])))
 })), ncol = width, byrow = TRUE))
 
-# h2.out <- as_FBM(h2.out)
-# beta.out <- as_FBM(matrix(unlist(test$estim), nrow = width))
-h2.out
-beta.out
-pred <- big_prodMat(h2.out,beta.out)
-length(pred)
-length(test.bigSNP$fam$affection)
-mse <- (pred - test.bigSNP$fam$affection) ^ 2
-rmse <- sqrt(mse)
-ave(rmse)[1]
-AUC(pred, test.bigSNP$fam$affection)
+
+shape(PRS[])
+G.train
+G.test
+# 
+# M <- snp_grid_stacking(multi_PRS = h1.activation, y.train = train$fam$affection, ncores = NCORES)
+saveRDS(h1.out, "output_weight.rds")
+# 
+snp_readBed("data_test.bed")
+test <- snp_attach("data_test.rds")
+G.test <- test$genotypes
+pred.h1 <- snp_grid_PRS(G.test, all_keep = all_keep, betas = sumstats$beta,lpval)
+pred <- big_prodMat(pred.h1, matrix(h1.out$estim))
+AUC(pred = pred, test$fam$affection)
+h1.out
+# Reference
+M <- snp_grid_stacking(multi_PRS = PRS, y.train = train$fam$affection, ncores = NCORES)
+beta <- as_FBM(matrix(M$beta.G))
+pred.SCT <- big_prodMat(G.test, beta)
+AUC(pred = pred.SCT, test$fam$affection)
