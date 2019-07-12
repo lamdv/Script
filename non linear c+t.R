@@ -7,6 +7,7 @@ library(data.table)
 library(sigmoid)
 library(neuralnet)
 library(keras)
+library(ranger)
 
 
 sumstats <- bigreadr::fread2("sumstats.txt")
@@ -29,46 +30,64 @@ head(PRS)
 PRS_train <- matrix(PRS[,], nrow = PRS$nrow)
 head(PRS_train)
 PRS[1:PRS$nrow]
-# Neural net learning on output
-# single layer, 50 neuron
 
-model <- keras_model_sequential() 
-model %>%
-  layer_dense(units = 256, activation = "relu", input_shape = c(2800)) %>% 
-  layer_dropout(rate = 0.4) %>%
-  layer_dense(units = 10, activation = "softmax")
+# Oversampling
+y_case <- which(train$fam$affection %in% c(1))
 
-model %>% compile(
-  # loss = 'categorical_crossentropy',
-  loss = 'sparse_categorical_crossentropy',
-  optimizer = optimizer_rmsprop(),
-  metrics = c('accuracy')
-)
-PRS$show()
-y.train <-  to_categorical(train$fam$affection)
+append(ds,PRS)
+ds <- PRS[y_case,]
+
+ds<-PRS[]
 y.train <- train$fam$affection
-
-history <- model$fit(
-  PRS[], y.train,
-  epochs = 10, batch_size = 64
-)
-
-shape(PRS[])
-G.train
-G.test
+for (i in range(1, 10)){
+  y.train <- append(y.train, train$fam$affection[y_case])
+  ds <- rbind(ds, PRS[y_case,])
+}
 # 
-# M <- snp_grid_stacking(multi_PRS = h1.activation, y.train = train$fam$affection, ncores = NCORES)
-saveRDS(h1.out, "output_weight.rds")
+# model <- keras_model_sequential() 
+# model %>%
+#   layer_dense(units = 1000, activation = "softmax", input_shape = c(35707), kernel_regularizer=regularizer_l1(0.02)) %>% 
+#   
+#   # layer_dense(units = 1000, activation = "softmax", input_shape = c(2800)) %>% 
+#   # layer_dropout(rate=0.1) %>%
+#   layer_dense(units = 2, activation = "softmax", kernel_regularizer=regularizer_l1(0.01))
 # 
+# model %>% compile(
+#   #loss = 'categorical_crossentropy',
+#   loss = 'mean_absolute_percentage_error',
+#   optimizer = 'SGD',
+#   metrics = c('accuracy')
+# )
+# PRS$show()
+#y.train <-  to_categorical(y.train)
+
+# svd <- big_randomSVD(G.train, snp_scaleBinom())
+# pca <- big_prodMat(G.train, svd$scale, ind.col = keeps)
+# 
+# history <- model$fit(
+#   ds, y.train,
+#   class_weight = list(1, 10),
+#   epochs = as.integer(10), batch_size = as.integer(100)
+# )
+
+# keeps <- snp_clumping(G.train, CHR)
+# G.train[,keeps]
+# history <- model$fit(
+#   G.train[,keeps], to_categorical(train$fam$affection),
+#   class_weight = list(1, 1000),
+#   epochs = as.integer(100), batch_size = as.integer(100)
+# )
+
 snp_readBed("data_test.bed")
 test <- snp_attach("data_test.rds")
 G.test <- test$genotypes
-pred.h1 <- snp_grid_PRS(G.test, all_keep = all_keep, betas = sumstats$beta,lpval)
-pred <- big_prodMat(pred.h1, matrix(h1.out$estim))
-AUC(pred = pred, test$fam$affection)
+PRS_test <- snp_grid_PRS(G.test, all_keep = all_keep, betas = sumstats$beta,lpval)
+pred <- model$predict(PRS_test[,])
+pred_prob <- model$predict_proba(PRS_test[,])
+AUC(pred = model$predict(PRS_test[,])[,1], test$fam$affection)
 h1.out
 # Reference
 M <- snp_grid_stacking(multi_PRS = PRS, y.train = train$fam$affection, ncores = NCORES)
 beta <- as_FBM(matrix(M$beta.G))
 pred.SCT <- big_prodMat(G.test, beta)
-AUC(pred = pred.SCT, test$fam$affection)
+AUC(pred = pred, test$fam$affection)

@@ -6,7 +6,7 @@ library(bigreadr)
 library(sigmoid)
 # Set parameters
 
-width = 10000
+width = 100000
 
 
 sumstats <- bigreadr::fread2("sumstats.txt")
@@ -66,38 +66,22 @@ h1.out <- as_FBM(h1.out)
 hist(h1.out[])
 h1.out$show()
 # Logistic Regression on the output of hidden layer
-beta.out <- as_FBM(matrix(unlist(big_univLinReg(h1.out, y.train = obj.bigSNP$fam$affection)$estim), nrow = width))
+beta.out.ELM <- as_FBM(matrix(unlist(big_univLogReg(h1.out, y01.train = train$fam$affection)$estim), nrow = width))
+beta.out <- as_FBM(matrix(unlist(big_univLinReg(G, y.train = train$fam$affection)$estim), nrow = width))
 
 #########
 # Validation step
 #########
 
-snp_readBed(bedfile = paste(data_test,"bed",sep="."), backingfile = data_test)
-test.bigSNP <- snp_attach(paste(data_test,"rds",sep = "."))
-G.test <- test.bigSNP$genotypes$add_columns(1)
-G.test[,G.test$ncol] <- 1
-
-# ELM Steps
-h2 <- as_FBM(big_prodMat(G.test,W))
-
-h2.out <- as_FBM(matrix(unlist(big_apply(h2, a.FUN = function(X, ind){
-  1/(1+exp((-X[,ind])))
-})), ncol = width, byrow = TRUE))
-
-
-shape(PRS[])
-G.train
-G.test
-# 
-# M <- snp_grid_stacking(multi_PRS = h1.activation, y.train = train$fam$affection, ncores = NCORES)
-saveRDS(h1.out, "output_weight.rds")
-# 
 snp_readBed("data_test.bed")
 test <- snp_attach("data_test.rds")
 G.test <- test$genotypes
 pred.h1 <- snp_grid_PRS(G.test, all_keep = all_keep, betas = sumstats$beta,lpval)
-pred <- big_prodMat(pred.h1, matrix(h1.out$estim))
-AUC(pred = pred, test$fam$affection)
+pred.h1$add_columns(1)
+pred.h1[pred.h1$ncol] <- 1
+pred.h1 <- as_FBM(big_prodMat(pred.h1, W[]))
+pred <- big_prodMat(pred.h1, beta.out.ELM)
+1-AUC(pred = pred, test$fam$affection)
 h1.out
 # Reference
 M <- snp_grid_stacking(multi_PRS = PRS, y.train = train$fam$affection, ncores = NCORES)
