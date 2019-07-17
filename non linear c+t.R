@@ -78,13 +78,39 @@ for (i in range(1, 10)){
 #   epochs = as.integer(100), batch_size = as.integer(100)
 # )
 
+PRS.df <- as.data.frame(PRS[])
+cols <- colnames(PRS.df)
+PRS.df$newcolumn <- train$fam$affection
+colnames(PRS.df) <- append(cols, "y")
+PRS.df$y
+
+f <- as.formula(paste("y ~", paste(cols[!cols %in% "PRS.df"], collapse = " + ")))
+f
+
+rf <- ranger(f, data = PRS.df, num.trees = 100, verbose = TRUE, write.forest = TRUE)
+
 snp_readBed("data_test.bed")
 test <- snp_attach("data_test.rds")
 G.test <- test$genotypes
 PRS_test <- snp_grid_PRS(G.test, all_keep = all_keep, betas = sumstats$beta,lpval)
 pred <- model$predict(PRS_test[,])
 pred_prob <- model$predict_proba(PRS_test[,])
-AUC(pred = model$predict(PRS_test[,])[,1], test$fam$affection)
+
+PRS_test.df <- as.data.frame(PRS_test[])
+cols <- colnames(PRS_test.df)
+PRS_test.df$newcolumn <- test$fam$affection
+colnames(PRS_test.df) <- append(cols, "y")
+PRS_test.df$y
+AUCs <- c()
+for (j in seq(1 : 10)){
+for (i in seq(1: 100)) {
+  rf <- ranger(f, data = PRS.df, num.trees = j*10, verbose = TRUE, write.forest = TRUE, alpha = (i/100))
+  pred <- predict(rf, PRS_test.df)
+  AUCs<-append(AUCs, AUC(pred = pred$predictions, test$fam$affection))
+}
+}
+AUCs
+boxplot(AUCs)
 h1.out
 # Reference
 M <- snp_grid_stacking(multi_PRS = PRS, y.train = train$fam$affection, ncores = NCORES)
