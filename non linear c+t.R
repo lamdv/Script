@@ -26,6 +26,7 @@ saveRDS(all_keep, "all_keep.rds")
 all_keep <- readRDS("all_keep.rds")
 head(all_keep)
 PRS <-snp_grid_PRS(G.train,all_keep = all_keep, betas = sumstats$beta,lpval)
+saveRDS(PRS, "stack.rds")
 head(PRS)
 PRS_train <- matrix(PRS[,], nrow = PRS$nrow)
 head(PRS_train)
@@ -34,15 +35,59 @@ PRS[1:PRS$nrow]
 # Oversampling
 y_case <- which(train$fam$affection %in% c(1))
 
-append(ds,PRS)
-ds <- PRS[y_case,]
-
 ds<-PRS[]
 y.train <- train$fam$affection
 for (i in range(1, 10)){
   y.train <- append(y.train, train$fam$affection[y_case])
   ds <- rbind(ds, PRS[y_case,])
 }
+
+
+
+PRS.df <- as.data.frame(ds)
+cols <- colnames(PRS.df)
+PRS.df$newcolumn <- y.train
+colnames(PRS.df) <- append(cols, "y")
+PRS.df$y
+
+f <- as.formula(paste("y ~", paste(cols[!cols %in% "PRS.df"], collapse = " + ")))
+f
+
+rf <- ranger(f, data = PRS.df, num.trees = 1000, verbose = TRUE, write.forest = TRUE)
+
+snp_readBed("data_test.bed")
+test <- snp_attach("data_test.rds")
+G.test <- test$genotypes
+PRS_test <- snp_grid_PRS(G.test, all_keep = all_keep, betas = sumstats$beta,lpval)
+# pred <- model$predict(PRS_test[,])
+# pred_prob <- model$predict_proba(PRS_test[,])
+
+PRS_test.df <- as.data.frame(PRS_test[])
+cols <- colnames(PRS_test.df)
+PRS_test.df$newcolumn <- test$fam$affection
+colnames(PRS_test.df) <- append(cols, "y")
+PRS_test.df$y
+AUCs <- c()
+pred <- predict(rf, PRS_test.df)
+AUC(pred = pred$predictions, test$fam$affection)
+for (j in seq(1 : 10)){
+  for (i in seq(1: 100)) {
+    rf <- ranger(f, data = PRS.df, num.trees = j*100, verbose = TRUE, write.forest = TRUE, alpha = (i/100))
+    pred <- predict(rf, PRS_test.df)
+    AUCs<-append(AUCs, AUC(pred = pred$predictions, test$fam$affection))
+  }
+}
+AUCs
+plot(AUCs)
+h1.out
+# Reference
+M <- snp_grid_stacking(multi_PRS = PRS, y.train = train$fam$affection, ncores = NCORES)
+beta <- as_FBM(matrix(M$beta.G))
+pred.SCT <- big_prodMat(G.test, beta)
+AUC(pred = pred, test$fam$affection)
+
+
+
 # 
 # model <- keras_model_sequential() 
 # model %>%
@@ -78,42 +123,9 @@ for (i in range(1, 10)){
 #   epochs = as.integer(100), batch_size = as.integer(100)
 # )
 
-PRS.df <- as.data.frame(PRS[])
-cols <- colnames(PRS.df)
-PRS.df$newcolumn <- train$fam$affection
-colnames(PRS.df) <- append(cols, "y")
-PRS.df$y
+# PRS.df <- as.data.frame(PRS[])
+# cols <- colnames(PRS.df)
+# PRS.df$newcolumn <- train$fam$affection
+# colnames(PRS.df) <- append(cols, "y")
+# PRS.df$y
 
-f <- as.formula(paste("y ~", paste(cols[!cols %in% "PRS.df"], collapse = " + ")))
-f
-
-rf <- ranger(f, data = PRS.df, num.trees = 100, verbose = TRUE, write.forest = TRUE)
-
-snp_readBed("data_test.bed")
-test <- snp_attach("data_test.rds")
-G.test <- test$genotypes
-PRS_test <- snp_grid_PRS(G.test, all_keep = all_keep, betas = sumstats$beta,lpval)
-pred <- model$predict(PRS_test[,])
-pred_prob <- model$predict_proba(PRS_test[,])
-
-PRS_test.df <- as.data.frame(PRS_test[])
-cols <- colnames(PRS_test.df)
-PRS_test.df$newcolumn <- test$fam$affection
-colnames(PRS_test.df) <- append(cols, "y")
-PRS_test.df$y
-AUCs <- c()
-for (j in seq(1 : 10)){
-for (i in seq(1: 100)) {
-  rf <- ranger(f, data = PRS.df, num.trees = j*10, verbose = TRUE, write.forest = TRUE, alpha = (i/100))
-  pred <- predict(rf, PRS_test.df)
-  AUCs<-append(AUCs, AUC(pred = pred$predictions, test$fam$affection))
-}
-}
-AUCs
-boxplot(AUCs)
-h1.out
-# Reference
-M <- snp_grid_stacking(multi_PRS = PRS, y.train = train$fam$affection, ncores = NCORES)
-beta <- as_FBM(matrix(M$beta.G))
-pred.SCT <- big_prodMat(G.test, beta)
-AUC(pred = pred, test$fam$affection)
