@@ -87,7 +87,7 @@ $$Y = \beta' G + \epsilon = [\sum_{i=1}^{m} \beta_{i1} G_1 + \epsilon_1, \sum_{i
 where $\beta$ is a $m*2$ weight matrix, $G$ is $m$ length vector of genetic markers 
 and $\epsilon$ is a pair of random error that's independent of G.
 
-The Polygenic score is defined as:
+The Polygenic Risk Score is defined as:
 
 $$\hat{S} = \sum_{i=1}^{m} \beta_{i1} G_1$$
 Association between a trait and its composite score highly implies there exist a
@@ -95,11 +95,11 @@ genetic signal among the markers, and the evidence of genetic effect when there 
 no obvious candidate can be obtained. Currently, PRS has been used
 for association testing rather than predicting complex traits \cite{Dudbridge2013}.
 
-However, \cite{Inouye1883} conducted a PRS study on 1.7 million genetic
+However, \cite{Inouye1883} conducted a GWAS on 1.7 million genetic
 variants using UK Biobank database on Coronary Artery Disease, and found
 a strong association between PRS and hazard ration for CAD; demonstrated
-the power of genomic risk prediction to stratify individuals, and highlights the
-possibility for genomic screening early in life to support risk prediction and
+the power of genomics risk prediction to stratify individuals, and highlights the
+possibility for genomics screening early in life to support risk prediction and
 preventive treatment.
 
 \subsection{Calculating $\beta$}
@@ -117,15 +117,29 @@ We implemented this model in R using a package called \textit{bigsnpr} \cite{big
 that provide various functions for genomics computation.
 
 To specifically combat Linkage Disequilibrium, LDPred provide a Python package and 
+<<<<<<< HEAD
 standalone application to calculate PRS, with LD modelled into the computation 
+=======
+standalone application to calculate PRS, with Linkage Disequilibrium modelled into the computation 
+>>>>>>> 7b05063... merge
 \cite{LDpred}.
 
 \textit{lassosum} \cite{doi:10.1002/gepi.22050} is an R package that provides PRS using a 
 Penalized Regression known as LASSO. 
 This method is the state of the art, and so far provide the best AUC in all methods 
 tested ($AUC = 0.73$).
+<<<<<<< HEAD
+=======
 
 \section{Methodology}
+
+\subsection{C+T PRS}
+\subsection{Lassosum}
+\subsection{}
+
+>>>>>>> 7b05063... merge
+
+\subsection{Dataset}
 
 The models are trained on a sample dataset of 8000 data points, each with more than 
 $600000$ SNPs. Atest dataset is also provided. The same dataset is also used to verify 
