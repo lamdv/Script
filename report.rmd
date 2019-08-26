@@ -15,6 +15,7 @@ directory <- "../simus"
 file_sumstat <- "sumstats.txt"
 file_train <- "data_train"
 file_test <- "data_test"
+LDblocks <- "EUR.hg19"
 ```
 
 ## Methods
@@ -41,13 +42,14 @@ For some reason I can not get Keras to work with SCT first layer (always return 
 - ranger
 - keras
 
-```{r, input, warning=FALSE}
+```{r, packages, warning=FALSE}
 library(bigstatsr)
 library(bigsnpr)
 library(lassosum)
 library(data.table)
 library(xgboost)
 library(ranger)
+library(keras)
 ```
 
 ## Dataset
@@ -88,9 +90,12 @@ all_keep <- snp_grid_clumping(G.train, CHR, POS, lpval, ncores = NCORES)
 PRS <-snp_grid_PRS(G.train,all_keep = all_keep, betas = sumstats$beta,lpval)
 PRS_test <- snp_grid_PRS(G.test, all_keep = all_keep, betas = sumstats$beta,lpval)
 
-# Convert to dataframe for non-FBM based methods
 ```
+
+Other than SCT, other methods require DataFrame or R Matrix than FBM to manage data. I converted the FBM output of C+T to DataFrame and change the corresponding columns.
+
 ```{r, include=FALSE}
+# Convert to dataframe for non-FBM based methods
 ds<-PRS[]
 y.train <- train$fam$affection
 PRS.df <- as.data.frame(ds)
@@ -103,11 +108,10 @@ colnames(PRS.df) <- append(cols, "y")
 saveRDS(all_keep, "all_keep.rds")
 all_keep <- readRDS("all_keep.rds")
 ```
+
 ## Data treatment: Oversampling
 
-To oversampling I extract all positive (*affection = 1*), and append them a number of times. For this simulated dataset, I enhanced the number of cases 10 times, thus the ratio become ~70:30 (from 80:20).
-
-I am have yet to figure out oversampling for SCT and lassosum, so I have not include oversampling for xgboost, Random Forest and Neural Net.
+To oversampling I extract all positive (*affection = 1*), and append them a number of times. For this simulated dataset, I enhanced the number of cases 10 times, thus the ratio become ~70:30 (from 20:80).
 
 ```{r, Data-treatment, }
 y_case <- which(train$fam$affection %in% c(1))
@@ -136,7 +140,7 @@ AUC(pred = pred.SCT, test$fam$affection)
 
 ## Method 2: XGBoost
 
-XGBoost provide marginally better result compare to SCT. However this result heavily depend on booster and objective selection. Experiments shown that **gblinear** booster with **count:poisson** objective give the best results.
+XGBoost provide slightly better result compare to SCT. However this result heavily depend on booster and objective selection. Experiments shown that **gblinear** booster with **count:poisson** objective give the best results.
 
 For experimentation, I run 9 different *max_depth* and 9 *nrounds*. Each combination is repeated 10 times and the mean value calculated to rule out the randomess of *gblinear* booster
 
@@ -172,14 +176,10 @@ boxplot(AUCs)
 
 Lassosum use L1 regularization to better fit the regression model.
 
-For L1 regularization of Linear Regression, 2 metaparameters are required: a learning rate $\alpha$ and a regularization parameter $\lambda$. However, lassosum does not require these parameters, as the software automatically scan the parameters space and select the best $\alpha$ and $\lambda$
+For basic L1 regularization of Linear Regression, 2 metaparameters are required: a learning rate $\alpha$ and a regularization parameter $\lambda$. However, *lassosum* does not require these parameters, as the software automatically scan the parameters space and select the best $\alpha$ and $\lambda$
 
 ```{r, lassosum, include=FALSE, }
 setwd(directory) 
-test.bfile <- "data_test"
-train.bfile <- "data_train"
-LDblocks <- "EUR.hg19"
-
 cor <- p2cor(p = sumstats$pval, n = 8000, sign=sumstats$beta)
 
 out <- lassosum.pipeline(cor =cor, chr=sumstats$chromosome, pos = sumstats$physical.pos, 
@@ -193,11 +193,16 @@ out2 <- subset(out, s=v$best.s, lambda = v$lambda)
 v2 <- validate(out2)
 v2$best.validation.result
 ```
+
 ```{r, result_lassosum}
 AUC(v$best.pgs, v$pheno)
 ```
 
 ## Method 4: Random Forest
+
+Random forest also give good AUC (above 70%, but less than other methods except for *keras*). The result highly dependen on the number of trees (more trees equals more convergence), and the learning rate also contribute to an lesser extend.
+
+The code in this session will sweep through the parameters: 1 to 10 trees and alpha from 0.1 to 1 (0.1 increment).
 
 ```{r rf, include = FALSE}
 PRS_test.df <- as.data.frame(PRS_test[])
@@ -219,3 +224,36 @@ plot(unlist(AUCs))
 ```
 
 ## Method 5: Nerual net (Keras)
+
+For some reason, *keras* cannot return good result; the prediction always biased to controls. Even with adjusted weights and oversampling, the bias is still there and AUC is always $0.5$. I included it here in case I figure it out in the future.
+
+In this example, I put a 10:1 weight ratio between case and control.
+
+```{r, keras}
+y.train <- train$fam$affection
+
+model <- keras_model_sequential() 
+model %>%
+ layer_dense(units = 1000, activation = "softmax", input_shape = c(2800), kernel_regularizer=regularizer_l1(0.02)) %>%
+ # layer_dense(units = 1000, activation = "softmax", input_shape = c(2800)) %>%
+ # layer_dropout(rate=0.1) %>%
+ layer_dense(units = 2, activation = "softmax", kernel_regularizer=regularizer_l1(0.01))
+
+model %>% compile(
+ #loss = 'categorical_crossentropy',
+ loss = 'mean_absolute_percentage_error',
+ optimizer = 'SGD',
+ metrics = c('accuracy')
+)
+PRS$show()
+y.train <-  to_categorical(y.train)
+
+history <- model$fit(
+ ds, y.train,
+ class_weight = list(1, 10),
+ epochs = as.integer(10), 
+ batch_size = as.integer(28)
+)
+AUC(predict_classes(model, PRS_test[]), test$fam$affection)
+
+```
