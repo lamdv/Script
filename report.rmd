@@ -113,7 +113,7 @@ all_keep <- readRDS("all_keep.rds")
 
 To oversampling I extract all positive (*affection = 1*), and append them a number of times. For this simulated dataset, I enhanced the number of cases 10 times, thus the ratio become ~70:30 (from 20:80).
 
-```{r, Data-treatment, }
+```{r, Data-treatment, eval=FALSE}
 y_case <- which(train$fam$affection %in% c(1))
 for (i in range(1, 10)){
   y.train <- append(y.train, train$fam$affection[y_case])
@@ -220,7 +220,7 @@ for (j in seq(1 : 10)){
 
 ```{r, result_rf}
 AUCs
-plot(unlist(AUCs))
+boxplot(AUCs)
 ```
 
 ## Method 5: Nerual net (Keras)
@@ -234,7 +234,7 @@ y.train <- train$fam$affection
 
 model <- keras_model_sequential() 
 model %>%
- layer_dense(units = 1000, activation = "softmax", input_shape = c(2800), kernel_regularizer=regularizer_l1(0.02)) %>%
+ layer_dense(units = 1000, activation = "softmax", input_shape = c(ncol(ds)), kernel_regularizer=regularizer_l1(0.02)) %>%
  # layer_dense(units = 1000, activation = "softmax", input_shape = c(2800)) %>%
  # layer_dropout(rate=0.1) %>%
  layer_dense(units = 2, activation = "softmax", kernel_regularizer=regularizer_l1(0.01))
@@ -245,7 +245,6 @@ model %>% compile(
  optimizer = 'SGD',
  metrics = c('accuracy')
 )
-PRS$show()
 y.train <-  to_categorical(y.train)
 
 history <- model$fit(
