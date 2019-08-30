@@ -204,21 +204,18 @@ tree_poisson_AUCs <- matrix(,nrow = 10, ncol = 10)
 for (i in seq(2 : 10)){
   for (j in seq(2: 10)) {
     temp <- c()
-    for(t in seq(1:10)){
-      bstSparse <- xgboost(data = ds[], 
-                           label = y.train, 
-                           booster="gbtree",
-                           max_depth = i, 
-                           eta = 1, 
-                           nthread = 2, 
-                           nrounds = j, 
-                           lambda = 0.1,
-                           objective = "count:poisson"
-                           )
-      pred <- predict(bstSparse, PRS_test[])
-      temp <- append(temp,AUC(pred = pred, test$fam$affection))
-    }
-    tree_poisson_AUCs[i,j] <- mean(temp)
+    bstSparse <- xgboost(data = ds[], 
+                         label = y.train, 
+                         booster="gbtree",
+                         max_depth = i, 
+                         eta = 1, 
+                         nthread = 2, 
+                         nrounds = j, 
+                         lambda = 0.1,
+                         objective = "count:poisson"
+                         )
+    pred <- predict(bstSparse, PRS_test[])
+    tree_poisson_AUCs[i,j] <- append(temp,AUC(pred = pred, test$fam$affection))
   }
 }
 ```

@@ -147,7 +147,7 @@ XGBoost provide slightly better result compare to SCT. However this result heavi
 
 For experimentation, I run 9 different *max_depth* and 9 *nrounds*. Each combination is repeated 10 times and the mean value calculated to rule out the randomess of *gblinear* booster
 
-```{r, xgboost, include=FALSE, }
+```{r, xgboost, result=FALSE}
 AUCs <- matrix(,nrow = 10, ncol = 10)
 for (i in seq(2 : 10)){
   for (j in seq(2: 10)) {
@@ -181,7 +181,7 @@ Lassosum use L1 regularization to better fit the regression model.
 
 For basic L1 regularization of Linear Regression, 2 metaparameters are required: a learning rate $\alpha$ and a regularization parameter $\lambda$. However, *lassosum* does not require these parameters, as the software automatically scan the parameters space and select the best $\alpha$ and $\lambda$
 
-```{r, lassosum, include=FALSE, }
+```{r, lassosum, result=FALSE}
 setwd(directory) 
 cor <- p2cor(p = sumstats$pval, n = 8000, sign=sumstats$beta)
 
@@ -207,7 +207,7 @@ Random forest also give good AUC (above 70%, but less than other methods except 
 
 The code in this session will sweep through the parameters: 1 to 10 trees and alpha from 0.1 to 1 (0.1 increment).
 
-```{r rf, include = FALSE}
+```{r rf, result=FALSE}
 PRS_test.df <- as.data.frame(PRS_test[])
 
 f <- as.formula(paste("y ~", paste(cols[!cols %in% "PRS.df"], collapse = " + ")))
@@ -232,7 +232,7 @@ For some reason, *keras* cannot return good result; the prediction always biased
 
 In this example, I put a 10:1 weight ratio between case and control.
 
-```{r, keras}
+```{r, keras, result=FALSE}
 y.train <- train$fam$affection
 
 model <- keras_model_sequential() 
@@ -256,6 +256,8 @@ history <- model$fit(
  epochs = as.integer(10), 
  batch_size = as.integer(28)
 )
+```
+```{r, result_keras}
 AUC(predict_classes(model, PRS_test[]), test$fam$affection)
 
 ```
